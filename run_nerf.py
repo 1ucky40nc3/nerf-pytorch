@@ -521,6 +521,7 @@ def config_parser():
                         help='input data directory')
 
     # training options
+    
     parser.add_argument("--netdepth", type=int, default=8, 
                         help='layers in network')
     parser.add_argument("--netwidth", type=int, default=256, 
@@ -545,6 +546,8 @@ def config_parser():
                         help='do not reload weights from saved ckpt')
     parser.add_argument("--ft_path", type=str, default=None, 
                         help='specific weights npy file to reload for coarse network')
+    parser.add_argument("--instant_ngp", action='store_true', 
+                        help='use the instant instant-ngp model and encoding')
 
     # rendering options
     parser.add_argument("--N_samples", type=int, default=64, 
@@ -726,7 +729,8 @@ def train():
             file.write(open(args.config, 'r').read())
 
     # Create nerf model
-    render_kwargs_train, render_kwargs_test, start, grad_vars, optimizer = create_nerf(args)
+    create_method = create_instantngp if args.instant_ngp else create_nerf
+    render_kwargs_train, render_kwargs_test, start, grad_vars, optimizer = create_method(args)
     global_step = start
 
     bds_dict = {
