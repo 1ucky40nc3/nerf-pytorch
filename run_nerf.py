@@ -261,6 +261,8 @@ def create_nerf(args):
 
 def create_instantngp(args):
     """Instantiate instant-ngp components."""
+    import tinycudann as tcnn
+
 
     model_config = {
         "encoding_config": {
@@ -279,7 +281,7 @@ def create_instantngp(args):
             "n_hidden_layers": 2
         }
     }
-    model = NeRF(
+    model = tcnn.NetworkWithInputEncoding(
         n_input_dims=3,
         n_output_dims=4,
         **model_config).to(device)
