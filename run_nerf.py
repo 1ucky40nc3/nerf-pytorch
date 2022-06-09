@@ -273,7 +273,7 @@ def create_instantngp(args):
             "base_resolution": 16,
             "per_level_scale": 1.5
         },
-        "network_config ": {
+        "network_config": {
             "otype": "FullyFusedMLP",
             "activation": "ReLU",
             "output_activation": "None",
