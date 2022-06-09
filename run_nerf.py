@@ -884,10 +884,12 @@ def train():
         # Rest is logging
         if i%args.i_weights==0:
             path = os.path.join(basedir, expname, '{:06d}.tar'.format(i))
+            network_fn_state_dict = render_kwargs_train['network_fn'].state_dict()
+            network_fine_state_dict = render_kwargs_train['network_fine'].state_dict() if render_kwargs_train['network_fine'] else None
             torch.save({
                 'global_step': global_step,
-                'network_fn_state_dict': render_kwargs_train['network_fn'].state_dict(),
-                'network_fine_state_dict': render_kwargs_train['network_fine'].state_dict(),
+                'network_fn_state_dict': network_fn_state_dict,
+                'network_fine_state_dict': network_fine_state_dict,
                 'optimizer_state_dict': optimizer.state_dict(),
             }, path)
             print('Saved checkpoints at', path)
