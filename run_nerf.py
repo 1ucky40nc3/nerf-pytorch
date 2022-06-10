@@ -58,12 +58,12 @@ def batchify(fn, chunk):
 def run_network(inputs, viewdirs, fn, embed_fn, embeddirs_fn, netchunk=1024 * 64):
     """Prepares inputs and applies network 'fn'."""
     inputs_flat = torch.reshape(inputs, [-1, inputs.shape[-1]])
-    embedded = embed_fn(inputs_flat)
+    embedded = embed_fn(inputs_flat).float()
 
     if viewdirs is not None:
         input_dirs = viewdirs[:,None].expand(inputs.shape)
         input_dirs_flat = torch.reshape(input_dirs, [-1, input_dirs.shape[-1]])
-        embedded_dirs = embeddirs_fn(input_dirs_flat)
+        embedded_dirs = embeddirs_fn(input_dirs_flat).float()
         embedded = torch.cat([embedded, embedded_dirs], -1)
 
     outputs_flat = batchify(fn, netchunk)(embedded)
@@ -255,7 +255,7 @@ def create_nerf(args):
             use_viewdirs=args.use_viewdirs).to(device)
         grad_vars += list(model_fine.parameters())
 
-    network_query_fn = lambda inputs, viewdirs, network_fn : run_network(
+    network_query_fn = lambda inputs, viewdirs, network_fn: run_network(
         inputs, viewdirs, network_fn, 
         embed_fn=embed_fn, embeddirs_fn=embeddirs_fn, netchunk=args.netchunk)
 
@@ -337,16 +337,21 @@ def create_nerfwithhash(args):
     }
     embed_fn = tcnn.Encoding(
         n_input_dims=3,
-        **encoding_config)
+        encoding_config=encoding_config)
     input_ch = embed_fn.n_output_dims 
     grad_vars = list(embed_fn.parameters())
 
     input_ch_views = 0
     embeddirs_fn = None
     if args.use_viewdirs:
+        encoding_dirs_config = {
+            "otype": "SphericalHarmonics",
+            "degree": 4,
+            "n_dims_to_encode": 3
+        }
         embeddirs_fn = tcnn.Encoding(
             n_input_dims=3,
-            **encoding_config)
+            encoding_config=encoding_dirs_config)
         input_ch_views = embeddirs_fn.n_output_dims
         grad_vars += list(embeddirs_fn.parameters())
 
@@ -446,8 +451,6 @@ def create_nerfwithhash(args):
 
 def create_instantngp(args):
     """Instantiate instant-ngp components."""
-
-
     model_config = {
         "encoding_config": {
             "otype": "HashGrid",
