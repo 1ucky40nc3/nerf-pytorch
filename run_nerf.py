@@ -176,9 +176,9 @@ def render_path(
 
     if render_factor != 0:
         # Render downsampled for speed
-        H = H//render_factor
-        W = W//render_factor
-        focal = focal/render_factor
+        H = H // render_factor
+        W = W // render_factor
+        focal = focal / render_factor
 
     rgbs = []
     disps = []
@@ -704,9 +704,6 @@ def render_rays(ray_batch,
     return ret
 
 
-
-
-
 def train():
     parser = config_parser()
     args = parser.parse_args()
@@ -814,7 +811,11 @@ def train():
             file.write(open(args.config, 'r').read())
 
     # Create nerf model
-    create_method = create_instantngp if args.instant_ngp else create_nerf
+    create_method = create_nerf
+    if args.hashenc:
+        create_method = create_nerfwithhash
+    elif args.instant_ngp:
+        create_method = create_instantngp
     render_kwargs_train, render_kwargs_test, start, grad_vars, optimizer = create_method(args)
     global_step = start
 
@@ -982,7 +983,7 @@ def train():
         ###   update learning rate   ###
         decay_rate = 0.1
         decay_steps = args.lrate_decay * 1000
-        new_lrate = args.lrate * (decay_rate ** (global_step / decay_steps))
+        new_lrate = args.lrate * (decay_rate**(global_step / decay_steps))
         for param_group in optimizer.param_groups:
             param_group['lr'] = new_lrate
 
