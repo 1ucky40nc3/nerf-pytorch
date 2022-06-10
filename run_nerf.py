@@ -1,19 +1,22 @@
-import os, sys
-import numpy as np
-import imageio
+import os
+import sys
 import json
-import random
 import time
+import random
+
+import numpy as np
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from tqdm import tqdm, trange
-
-import matplotlib.pyplot as plt
-
-import wandb
 
 import tinycudann as tcnn
+
+import imageio
+
+from tqdm import tqdm, trange
+import matplotlib.pyplot as plt
+import wandb
 
 from run_nerf_helpers import to8b
 from run_nerf_helpers import mse2psnr
