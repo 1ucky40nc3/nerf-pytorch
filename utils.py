@@ -41,6 +41,8 @@ def config_parser():
                         help='specific weights npy file to reload for coarse network')
     parser.add_argument("--instant_ngp", action='store_true', 
                         help='use the instant instant-ngp model and encoding')
+    parser.add_argument("--hashenc", action='store_true', 
+                        help='use the instant instant-ngp encoding and the standard nerf')
 
     # rendering options
     parser.add_argument("--N_samples", type=int, default=64, 
