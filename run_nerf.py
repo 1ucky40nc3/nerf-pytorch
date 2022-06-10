@@ -321,14 +321,28 @@ def create_nerf(args):
 
 def create_nerfwithhash(args):
     """Instantiate NeRF's MLP model."""
-    embed_fn, input_ch = get_embedder(
-        args.multires, args.i_embed)
+    encoding_config = {
+        "otype": "HashGrid",
+        "n_levels": 16,
+        "n_features_per_level": 2,
+        "log2_hashmap_size": 19,
+        "base_resolution": 16,
+        "per_level_scale": 2.0
+    }
+    embed_fn = tcnn.Encoding(
+        n_input_dims=3,
+        **encoding_config)
+    input_ch = embed_fn.n_output_dims 
+    grad_vars = list(embed_fn.parameters())
 
     input_ch_views = 0
     embeddirs_fn = None
     if args.use_viewdirs:
-        embeddirs_fn, input_ch_views = get_embedder(
-            args.multires_views, args.i_embed)
+        embeddirs_fn = tcnn.Encoding(
+            n_input_dims=3,
+            **encoding_config)
+        input_ch_views = embeddirs_fn.n_output_dims
+        grad_vars += list(embeddirs_fn.parameters())
 
     output_ch = 5 if args.N_importance > 0 else 4
     skips = [4]
@@ -340,7 +354,7 @@ def create_nerfwithhash(args):
         skips=skips,
         input_ch_views=input_ch_views, 
         use_viewdirs=args.use_viewdirs).to(device)
-    grad_vars = list(model.parameters())
+    grad_vars += list(model.parameters())
 
     model_fine = None
     if args.N_importance > 0:
