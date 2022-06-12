@@ -30,10 +30,11 @@ from run_nerf_helpers import get_rays_np
 from run_nerf_helpers import ndc_rays
 from run_nerf_helpers import sample_pdf
 
-from load_llff import load_llff_data
-from load_deepvoxels import load_dv_data
-from load_blender import load_blender_data
-from load_LINEMOD import load_LINEMOD_data
+
+from data.blender import load_blender_data
+from data.deepvoxels import load_dv_data
+from data.LINEMOD import load_LINEMOD_data
+from data.llff import load_llff_data
 
 from utils import config_parser
 from utils import args2dict
