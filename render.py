@@ -37,6 +37,11 @@ from utils import config_parser
 from utils import args2dict
 
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+np.random.seed(0)
+DEBUG = False
+
+
 def raw2outputs(raw, z_vals, rays_d, raw_noise_std=0, white_bkgd=False, pytest=False):
     """Transforms model's predictions to semantically meaningful values.
     Args:
