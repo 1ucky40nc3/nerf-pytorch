@@ -1,40 +1,25 @@
 import os
-import sys
-import json
 import time
-import random
 
 import numpy as np
 
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from render import volumetric_rendering, render_path
+
+from render import volumetric_rendering
+from render import render_path
+import datasets
 import models
 
-import tinycudann as tcnn
 
 import imageio
 
 from tqdm import tqdm, trange
-import matplotlib.pyplot as plt
 import wandb
 
 from run_nerf_helpers import to8b
 from run_nerf_helpers import mse2psnr
 from run_nerf_helpers import img2mse
-from run_nerf_helpers import get_embedder
-from run_nerf_helpers import NeRF
-from run_nerf_helpers import get_rays
-from run_nerf_helpers import get_rays_np
-from run_nerf_helpers import ndc_rays
-from run_nerf_helpers import sample_pdf
 
-import datasets
-from datasets.blender import load_data as load_blender_data
-from datasets.deepvoxels import load_data as load_dv_data
-from datasets.LINEMOD import load_data as load_LINEMOD_data
-from datasets.llff import load_data as load_llff_data
 
 from utils import config_parser
 from utils import args2dict
@@ -172,7 +157,9 @@ def main():
         if i % args.i_weights == 0:
             path = os.path.join(basedir, expname, '{:06d}.tar'.format(i))
             network_fn_state_dict = render_kwargs_train['network_fn'].state_dict()
-            network_fine_state_dict = render_kwargs_train['network_fine'].state_dict() if render_kwargs_train['network_fine'] else None
+            network_fine_state_dict = (
+                render_kwargs_train['network_fine'].state_dict() 
+                if render_kwargs_train['network_fine'] else None)
             torch.save({
                 'global_step': global_step,
                 'network_fn_state_dict': network_fn_state_dict,
@@ -190,6 +177,7 @@ def main():
                     args.chunk, 
                     render_kwargs_test)
             print('Done, saving', rgbs.shape, disps.shape)
+
             moviebase = os.path.join(basedir, expname, '{}_spiral_{:06d}_'.format(expname, i))
             rgb_video, disp_video = moviebase + 'rgb.mp4', moviebase + 'disp.mp4'
             imageio.mimwrite(rgb_video, to8b(rgbs), fps=30, quality=8)
@@ -197,8 +185,12 @@ def main():
             wandb.log({"rgb_video": wandb.Video(rgb_video), "disp_video": wandb.Video(disp_video)}, step=i)
 
         if i % args.i_testset == 0 and i > 0:
-            testsavedir = os.path.join(basedir, expname, 'testset_{:06d}'.format(i))
+            testsavedir = os.path.join(
+                basedir, 
+                expname, 
+                'testset_{:06d}'.format(i))
             os.makedirs(testsavedir, exist_ok=True)
+
             print('test poses shape', poses[i_test].shape)
             with torch.no_grad():
                 render_path(

@@ -1,40 +1,11 @@
 import os
-import sys
-import json
-import time
-import random
 
 import numpy as np
 
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 
-import tinycudann as tcnn
-
-import imageio
-
-from tqdm import tqdm, trange
-import matplotlib.pyplot as plt
-import wandb
-
-from run_nerf_helpers import to8b
-from run_nerf_helpers import mse2psnr
-from run_nerf_helpers import img2mse
 from run_nerf_helpers import get_embedder
 from run_nerf_helpers import NeRF
-from run_nerf_helpers import get_rays
-from run_nerf_helpers import get_rays_np
-from run_nerf_helpers import ndc_rays
-from run_nerf_helpers import sample_pdf
-
-from datasets.blender import load_data as load_blender_data
-from datasets.deepvoxels import load_data as load_dv_data
-from datasets.LINEMOD import load_data as load_LINEMOD_data
-from datasets.llff import load_data as load_llff_data
-
-from utils import config_parser
-from utils import args2dict
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -42,7 +13,7 @@ np.random.seed(0)
 DEBUG = False
 
 
-def create_nerf(args):
+def create(args):
     """Instantiate NeRF's MLP model."""
     embed_fn, input_ch = get_embedder(
         args.multires, args.i_embed)
