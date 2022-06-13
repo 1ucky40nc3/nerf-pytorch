@@ -54,6 +54,9 @@ def main():
     render_kwargs_train, render_kwargs_test, start, grad_vars, optimizer = models.load(args)
     global_step = start
 
+    images, poses, render_poses, rays_rgb, hwf, near, far, K, i_train, i_val, i_test = datasets.load(args)
+    H, W, focal = hwf
+
     bds_dict = {'near': near, 'far': far}
     render_kwargs_train.update(bds_dict)
     render_kwargs_test.update(bds_dict)
@@ -67,9 +70,6 @@ def main():
         dir=args.basedir,
         tags=args.expname.split("_"),
         config=config)
-
-    images, poses, render_poses, rays_rgb, hwf, near, far, K, i_train, i_val, i_test = datasets.load(args)
-    H, W, focal = hwf
 
     # Short circuit if only rendering out from trained model
     if args.render_only:
