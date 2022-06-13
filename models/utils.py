@@ -1,3 +1,6 @@
+import torch
+
+
 def batchify(fn, chunk):
     """Constructs a version of 'fn' that applies to smaller batches."""
     if chunk is None:
