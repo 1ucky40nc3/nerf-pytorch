@@ -182,7 +182,7 @@ def load(args):
     return images, poses, render_poses, rays_rgb, hwf, near, far, K, i_train, i_val, i_test
 
 
-def iterator(args, images, poses, render_poses, rays_rgb, hwf, near, far, K, i_train, i_val, i_test, i_batch=0, i=0, start=0):
+def get(args, images, poses, rays_rgb, hwf, K, i_train, i_batch=0, i=0, start=0):
     N_rand = args.N_rand
     use_batching = not args.no_batching
     H, W, _ = hwf
