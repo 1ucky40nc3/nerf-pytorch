@@ -129,6 +129,8 @@ def load(args):
         # Prepare raybatch tensor if batching random rays
     N_rand = args.N_rand
     use_batching = not args.no_batching
+    rays_rgb = None
+    i_batch = None
     if use_batching:
         # For random ray batching
         print('get rays')
@@ -152,7 +154,7 @@ def load(args):
     if use_batching:
         rays_rgb = torch.Tensor(rays_rgb).to(device)
 
-    return images, poses, render_poses, rays_rgb, hwf, near, far, K, i_train, i_val, i_test
+    return images, poses, render_poses, rays_rgb, hwf, near, far, K, i_train, i_val, i_test, i_batch
 
 
 def get(args, images, poses, rays_rgb, hwf, K, i_train, i_batch=0, i=0, start=0):
