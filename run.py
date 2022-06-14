@@ -5,22 +5,23 @@ import numpy as np
 
 import torch
 
-from render import volumetric_rendering
-from render import render_path
+import imageio
+
+from tqdm import tqdm
+from tqdm import trange
+
+import wandb
+
+
 import datasets
 import models
 
+from render import volumetric_rendering
+from render import render_path
 
-import imageio
-
-from tqdm import tqdm, trange
-import wandb
-
-from run_nerf_helpers import to8b
-from run_nerf_helpers import mse2psnr
-from run_nerf_helpers import img2mse
-
-
+from utils import MSE
+from utils import PSNR
+from utils import to_8bit
 from utils import config_parser
 from utils import args2dict
 
@@ -101,7 +102,7 @@ def main():
                 render_factor=args.render_factor)
             print('Done rendering', testsavedir)
             test_video = os.path.join(testsavedir, 'video.mp4')
-            imageio.mimwrite(test_video, to8b(rgbs), fps=30, quality=8)
+            imageio.mimwrite(test_video, to_8bit(rgbs), fps=30, quality=8)
 
             return
 
@@ -113,8 +114,6 @@ def main():
     
     start = start + 1
     for i in trange(start, N_iters):
-        time0 = time.time()
-
         batch_rays, target_s, i_batch = datasets.get(
             args, images, poses, rays_rgb, hwf, K, i_train, 
             i_batch=i_batch, i=i, start=start)
@@ -124,19 +123,20 @@ def main():
             H, W, K, 
             chunk=args.chunk, 
             rays=batch_rays,
-            verbose=i < 10, retraw=True,
+            verbose=i < 10, 
+            retraw=True,
             **render_kwargs_train)
 
         optimizer.zero_grad()
-        img_loss = img2mse(rgb, target_s)
+        img_loss = MSE(rgb, target_s)
         trans = extras['raw'][...,-1]
         loss = img_loss
-        psnr = mse2psnr(img_loss)
+        psnr = PSNR(img_loss)
 
         if 'rgb0' in extras:
-            img_loss0 = img2mse(extras['rgb0'], target_s)
+            img_loss0 = MSE(extras['rgb0'], target_s)
             loss = loss + img_loss0
-            psnr0 = mse2psnr(img_loss0)
+            psnr0 = PSNR(img_loss0)
 
         loss.backward()
         optimizer.step()
@@ -150,8 +150,6 @@ def main():
             param_group['lr'] = new_lrate
 
         ################################
-
-        dt = time.time() - time0
 
         # Rest is logging
         if i % args.i_weights == 0:
@@ -180,8 +178,8 @@ def main():
 
             moviebase = os.path.join(basedir, expname, '{}_spiral_{:06d}_'.format(expname, i))
             rgb_video, disp_video = moviebase + 'rgb.mp4', moviebase + 'disp.mp4'
-            imageio.mimwrite(rgb_video, to8b(rgbs), fps=30, quality=8)
-            imageio.mimwrite(disp_video, to8b(disps / np.max(disps)), fps=30, quality=8)
+            imageio.mimwrite(rgb_video, to_8bit(rgbs), fps=30, quality=8)
+            imageio.mimwrite(disp_video, to_8bit(disps / np.max(disps)), fps=30, quality=8)
             wandb.log({"rgb_video": wandb.Video(rgb_video), "disp_video": wandb.Video(disp_video)}, step=i)
 
         if i % args.i_testset == 0 and i > 0:
