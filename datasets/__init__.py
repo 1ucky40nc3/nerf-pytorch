@@ -5,8 +5,6 @@ import torch
 from render.utils import get_rays
 from render.utils import get_rays_np
 
-
-
 from datasets import blender
 from datasets import llff
 from datasets import deepvoxels

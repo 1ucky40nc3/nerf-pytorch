@@ -6,13 +6,12 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-
 import imageio
 
 from tqdm import tqdm
 import wandb
 
-from run_nerf_helpers import to8b
+from utils import to_8bit
 from render.utils import get_rays
 from render.utils import ndc_rays
 from render.utils import sample_pdf
