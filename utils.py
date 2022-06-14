@@ -1,6 +1,10 @@
 import configargparse
 import argparse
 
+import torch
+
+import numpy as np
+
 
 def config_parser():
     parser = configargparse.ArgumentParser()
@@ -124,3 +128,18 @@ def args2dict(namespace):
         k: args2dict(v) if is_args(v) else v
         for k, v in vars(namespace).items()
     }
+
+
+def MSE(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+    """Compute the MSE error between prediction (x) and target (y)."""
+    return torch.mean((x - y)**2)
+
+
+def PSNR(x: torch.Tensor) -> torch.Tensor:
+    """Compute the PSNR score in dB."""
+    return -10. * torch.log(x) / torch.log(torch.Tensor([10.]))
+
+
+def to_8bit(x: torch.Tensor):
+    """Convert an image-like array to an 8-bit image with values in [0, 255]."""
+    return (255 * np.clip(x, 0, 1)).astype(np.uint8)
