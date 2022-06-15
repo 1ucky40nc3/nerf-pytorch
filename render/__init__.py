@@ -340,7 +340,7 @@ def render_path(
             psnrs.append(p)
         
         if savedir is not None:
-            rgb8 = to8b(rgbs[-1])
+            rgb8 = to_8bit(rgbs[-1])
             filename = os.path.join(savedir, '{:03d}.png'.format(i))
             imageio.imwrite(filename, rgb8)
 
